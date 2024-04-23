@@ -1,4 +1,5 @@
 # Import necessary libraries
+import os
 import pandas as pd
 import numpy as np
 import seaborn as sns
@@ -20,6 +21,12 @@ print(data.describe())
 
 # Plot pairplot to see relationships between features and target variable
 sns.pairplot(data, hue='DEATH_EVENT')  # Change 'death_event' to 'DEATH_EVENT'
+# Get the path to the Downloads folder on Mac
+downloads_folder = os.path.expanduser("~/Downloads")
+
+# Save the plot to the Downloads folder
+plt.savefig(os.path.join(downloads_folder, 'pairplot.png'))
+
 plt.show()
 
 # Plot heatmap to see correlations between features
@@ -65,11 +72,10 @@ importance_df = pd.DataFrame({
 # Sort the features by importance
 importance_df = importance_df.sort_values(by='Importance', ascending=False)
 
-# Display feature importance
+
 print("\nFeature Importance:")
 print(importance_df)
 
-# Plot feature importance
 plt.figure(figsize=(12, 8))
 sns.barplot(x='Importance', y='Feature', data=importance_df)
 plt.title('Feature Importance')
@@ -77,12 +83,10 @@ plt.xlabel('Importance')
 plt.ylabel('Feature')
 plt.show()
 
-# Function to get user input for clinical data
+
 def get_user_input():
-    # Initialize a dictionary to hold the user's data
     user_data = {}
-    
-    # Prompt the user for input and convert to the appropriate data type
+
     user_data['age'] = float(input("Enter age (years): "))
     user_data['anaemia'] = int(input("Do you have anemia? (1 for yes, 0 for no): "))
     user_data['creatinine_phosphokinase'] = float(input("Enter creatinine phosphokinase level (mcg/L): "))
@@ -96,19 +100,47 @@ def get_user_input():
     user_data['smoking'] = int(input("Do you smoke? (1 for yes, 0 for no): "))
     user_data['time'] = int(input("Enter follow-up period (days): "))
     
-    # Convert the user data to a DataFrame
     user_df = pd.DataFrame(user_data, index=[0])
     
     return user_df
 
-# Get user input
+
 user_input = get_user_input()
 
-# Make predictions using the trained Random Forest model
-prediction = rf_model.predict(user_input)
+user_input_df = pd.DataFrame(user_input, index=[0])
 
-# Provide risk rating based on the model's prediction
-if prediction == 1:
-    print("Based on the provided information, you may have a high risk of heart failure. Please consult a medical professional.")
-else:
-    print("Based on the provided information, you have a low risk of heart failure.")
+prediction_proba = rf_model.predict_proba(user_input_df)
+heart_failure_probability = prediction_proba[0][1]
+heart_failure_probability_percent = heart_failure_probability * 100
+
+print("Based on the provided information, there is a {:.2f}% probability of experiencing heart failure.".format(heart_failure_probability_percent))
+
+# user_input = {
+#     'age': 70,  # Age in years
+#     'anaemia': 1,  # Presence of anaemia (1 for yes, 0 for no)
+#     'creatinine_phosphokinase': 200,  # Level of creatinine phosphokinase in mcg/L
+#     'diabetes': 0,  # Presence of diabetes (1 for yes, 0 for no)
+#     'ejection_fraction': 30,  # Ejection fraction percentage
+#     'high_blood_pressure': 1,  # Presence of high blood pressure (1 for yes, 0 for no)
+#     'platelets': 300000,  # Platelet count in kiloplatelets/mL
+#     'serum_creatinine': 1.2,  # Level of serum creatinine in mg/dL
+#     'serum_sodium': 135,  # Level of serum sodium in mEq/L
+#     'sex': 1,  # Gender (1 for male, 0 for female)
+#     'smoking': 0,  # Smoking status (1 for yes, 0 for no)
+#     'time': 150  # Follow-up period in days
+# }
+
+# user_input = {
+#     'age': 75,  # Age in years
+#     'anaemia': 1,  # Presence of anaemia (1 for yes, 0 for no)
+#     'creatinine_phosphokinase': 300,  # Level of creatinine phosphokinase in mcg/L
+#     'diabetes': 1,  # Presence of diabetes (1 for yes, 0 for no)
+#     'ejection_fraction': 25,  # Ejection fraction percentage
+#     'high_blood_pressure': 1,  # Presence of high blood pressure (1 for yes, 0 for no)
+#     'platelets': 200000,  # Platelet count in kiloplatelets/mL
+#     'serum_creatinine': 1.5,  # Level of serum creatinine in mg/dL
+#     'serum_sodium': 135,  # Level of serum sodium in mEq/L
+#     'sex': 1,  # Gender (1 for male, 0 for female)
+#     'smoking': 0,  # Smoking status (1 for yes, 0 for no)
+#     'time': 100  # Follow-up period in days
+# }
